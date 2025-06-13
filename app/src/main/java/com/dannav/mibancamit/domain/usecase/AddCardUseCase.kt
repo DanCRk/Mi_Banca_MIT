@@ -49,7 +49,10 @@ class AddCardUseCase @Inject constructor(
         return try {
             repo.addCard(card)
             Resource.Success(Unit, "Tarjeta añadida 🎉")
-        } catch (e: Exception) {
+        } catch (e : DatabaseRepository.DuplicateCardException){
+            Resource.Failure(e, "La tarjeta ya existe introduce otro numero.")
+        }
+        catch (e: Exception) {
             Resource.Failure(e, "No se pudo registrar.")
         }
     }

@@ -2,6 +2,7 @@ package com.dannav.mibancamit.utils
 
 import android.util.Base64
 import com.dannav.mibancamit.BuildConfig
+import java.security.MessageDigest
 import java.security.SecureRandom
 import javax.crypto.Cipher
 import javax.crypto.SecretKey
@@ -49,4 +50,10 @@ object CryptoUtils {
         val bytes = cipher.doFinal(ct)
         return bytes.toString(Charsets.UTF_8)
     }
+
+    fun sha256Base64(input: String): String =
+        MessageDigest.getInstance("SHA-256")
+            .digest(input.toByteArray())
+            .let { Base64.encodeToString(it, Base64.NO_WRAP) }
+
 }
