@@ -18,19 +18,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.dannav.mibancamit.presentation.navigationdrawer.model.CustomDrawerState
 import com.dannav.mibancamit.presentation.navigationdrawer.model.opposite
 import com.dannav.mibancamit.presentation.cards.CardsScreen
+import com.dannav.mibancamit.presentation.cards.MyCardsViewModel
 import com.dannav.mibancamit.presentation.navigationdrawer.model.NavigationItem
+import com.dannav.mibancamit.presentation.payments.PaymentScreen
+import com.dannav.mibancamit.presentation.payments.PaymentViewModel
 import com.dannav.mibancamit.ui.theme.BackgroundColor
 import com.dannav.mibancamit.ui.theme.ColorText
-import com.dannav.mibancamit.ui.theme.PrimaryDark
-import com.dannav.mibancamit.ui.theme.PrimaryLight
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,7 +40,9 @@ fun HomeContent(
     drawerState: CustomDrawerState,
     onDrawerClick: (CustomDrawerState) -> Unit,
     selectedNavigationItem: NavigationItem,
-    onLogOutClick : () -> Unit
+    onLogOutClick : () -> Unit,
+    cardsViewModel: MyCardsViewModel = hiltViewModel(),
+    paymentsViewModel: PaymentViewModel = hiltViewModel()
 ) {
     val title by remember { mutableStateOf("Mis Tarjetas") }
 
@@ -86,9 +89,8 @@ fun HomeContent(
 
 
         when (selectedNavigationItem){
-            NavigationItem.Home -> CardsScreen(Modifier.padding(paddingValues))
-            NavigationItem.Pay -> CardsScreen(Modifier.padding(paddingValues))
-            NavigationItem.Movements -> CardsScreen(Modifier.padding(paddingValues))
+            NavigationItem.Home -> CardsScreen(Modifier.padding(paddingValues), cardsViewModel)
+            NavigationItem.Pay -> PaymentScreen (Modifier.padding(paddingValues), paymentsViewModel, cardsViewModel)
             NavigationItem.LogOut -> onLogOutClick()
         }
 

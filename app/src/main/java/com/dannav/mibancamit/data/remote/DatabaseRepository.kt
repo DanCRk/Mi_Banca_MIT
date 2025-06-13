@@ -23,7 +23,9 @@ class DatabaseRepository @Inject constructor(
     suspend fun addCard(card: Card) {
         Log.i("DatabaseRepository", "Adding card: $card")
         val uid = authRepository.currentUser!!.uid
+        // Se genera la referencia con push() para obtener el identificador único (cardId)
         val cardRef = database.getReference("users/$uid/cards").push()
+        val cardId = cardRef.key ?: throw IllegalStateException("Card key not generated")
 
         // 🔐 Ciframos los campos sensibles
         val encType   = CryptoUtils.encrypt(card.cardType)
@@ -31,6 +33,7 @@ class DatabaseRepository @Inject constructor(
         val encName   = CryptoUtils.encrypt(card.cardName)
 
         val data = mapOf(
+            "cardId"      to cardId, // Campo en claro para identificar la tarjeta
             "cardType"    to encType.cipherText,
             "cardType_iv" to encType.iv,
             "cardNumber"  to encNumber.cipherText,
@@ -44,26 +47,24 @@ class DatabaseRepository @Inject constructor(
         cardRef.setValue(data).await()
     }
 
-    suspend fun topUp(cardId: String, amountCents: Long) {
-        val uid = authRepository.currentUser!!.uid
 
-        val balRef = database
-            .getReference("users/$uid/cards/$cardId/balance")
-
-        balRef.setValue(ServerValue.increment(amountCents)).await()
-    }
-
-    suspend fun pay(toUid: String, fromCard: String, amount: Long) {
-        val uid = authRepository.currentUser!!.uid
-
+    suspend fun pay(toUid: String, fromCardId: String, toCardId: String, amount: Double) {
+        val senderUid = authRepository.currentUser!!.uid
         val root = database.reference
 
         val updates = mapOf(
-            "/users/$uid/cards/$fromCard/balance"      to ServerValue.increment(-amount),
-            "/users/$toUid/cards/$fromCard/balance"    to ServerValue.increment(+amount)
+            // Se debita el balance en la tarjeta del remitente
+            "/users/$senderUid/cards/$fromCardId/balance" to ServerValue.increment(-amount),
+            // Se acredita el balance en la tarjeta del destinatario
+            "/users/$toUid/cards/$toCardId/balance" to ServerValue.increment(+amount)
         )
         root.updateChildren(updates).await()
+
+        recordTransaction(senderUid, toUid, fromCardId, toCardId, amount)
     }
+
+
+
 
     fun observeCards(): Flow<List<Card>> = callbackFlow {
         val uid = authRepository.currentUser!!.uid
@@ -73,6 +74,7 @@ class DatabaseRepository @Inject constructor(
             override fun onDataChange(snapshot: DataSnapshot) {
                 val cards = snapshot.children.mapNotNull { snap ->
                     try {
+                        val cardId = snap.child("cardId").value as? String ?: snap.key ?: ""
                         val typeEnc = CryptoUtils.Enc(
                             cipherText = snap.child("cardType").value as String,
                             iv         = snap.child("cardType_iv").value as String
@@ -91,12 +93,14 @@ class DatabaseRepository @Inject constructor(
                         val name     = CryptoUtils.decrypt(nameEnc)
                         val balance  = (snap.child("balance").value as? Number)?.toDouble() ?: 0.0
 
+                        // Aquí, para el color podrías usar la función getCardColor según el tipo
                         Card(
-                            cardType   = type,
+                            cardId = cardId,
+                            cardType = type,
                             cardNumber = number,
-                            cardName   = name,
-                            balance    = balance,
-                            color      = getCardColor(type)
+                            cardName = name,
+                            balance = balance,
+                            color = getCardColor(type)
                         )
                     } catch (e: Exception) {
                         null
@@ -113,4 +117,57 @@ class DatabaseRepository @Inject constructor(
         ref.addValueEventListener(listener)
         awaitClose { ref.removeEventListener(listener) }
     }
+
+
+    private suspend fun recordTransaction(
+        senderUid: String,
+        receiverUid: String,
+        fromCardId: String,
+        toCardId: String,
+        amount: Double
+    ) {
+        val transactionData = mapOf(
+            "fromCardId"  to fromCardId,       // Tarjeta del remitente
+            "toCardId"    to toCardId,         // Tarjeta del destinatario
+            "fromUid"     to senderUid,
+            "toUid"       to receiverUid,
+            "amount"      to amount,
+            "timestamp"   to ServerValue.TIMESTAMP
+        )
+
+        // Registra el movimiento en el nodo del remitente
+        val senderRef = database.getReference("users/$senderUid/transactions").push()
+        senderRef.setValue(transactionData).await()
+
+        // Registra el movimiento en el nodo del destinatario
+        val receiverRef = database.getReference("users/$receiverUid/transactions").push()
+        receiverRef.setValue(transactionData).await()
+    }
+
+
+    suspend fun findRecipientByCardNumber(cardNumberPlain: String): Pair<String, String>? {
+        val usersRef = database.getReference("users")
+        val snapshot = usersRef.get().await()
+        snapshot.children.forEach { userSnap ->
+            val userUid = userSnap.key ?: return@forEach
+            val cardsSnap = userSnap.child("cards")
+            cardsSnap.children.forEach { cardSnap ->
+                try {
+                    val encNumber = CryptoUtils.Enc(
+                        cipherText = cardSnap.child("cardNumber").value as String,
+                        iv = cardSnap.child("cardNumber_iv").value as String
+                    )
+                    // Se desencripta y se compara
+                    if (CryptoUtils.decrypt(encNumber) == cardNumberPlain) {
+                        val cardId = cardSnap.key ?: ""
+                        return Pair(userUid, cardId)
+                    }
+                } catch (e: Exception) {
+                }
+            }
+        }
+        return null
+    }
+
+
 }

@@ -14,10 +14,6 @@ enum class NavigationItem(
         icon = R.drawable.payments,
         title = "Pagar"
     ),
-    Movements(
-        icon = R.drawable.movements,
-        title = "Mis movimientos"
-    ),
     LogOut(
         icon = R.drawable.logout,
         title = "Cerrar Sesion"
