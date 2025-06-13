@@ -5,11 +5,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.dannav.mibancamit.presentation.HomeScreen
 import com.dannav.mibancamit.presentation.LoginScreen
+import com.dannav.mibancamit.presentation.MainViewModel
 import com.dannav.mibancamit.presentation.RegisterScreen
 import com.dannav.mibancamit.presentation.components.cards.NeomorphismCard
 import com.dannav.mibancamit.presentation.home.HomeContent
@@ -33,7 +35,9 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainContent() {
+fun MainContent(
+    mainViewModel : MainViewModel = hiltViewModel()
+) {
     val navController = rememberNavController()
     val startDestination = HomeScreen
 
@@ -66,7 +70,13 @@ fun MainContent() {
 
         composable<HomeScreen> {
             MainScreen {
-
+                mainViewModel.logOut()
+                navController.navigate(LoginScreen) {
+                    popUpTo(HomeScreen) {
+                        inclusive = true
+                    }
+                    launchSingleTop = true
+                }
             }
         }
     }
