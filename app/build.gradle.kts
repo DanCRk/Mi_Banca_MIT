@@ -6,6 +6,8 @@ plugins {
     alias(libs.plugins.hilt)
     alias(libs.plugins.crashlytics)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.jetbrainsKotlinSerialization)
+
 }
 
 android {
@@ -55,15 +57,20 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.kotlinx.serialization.json)
+
 
     //COMPOSE
     implementation(libs.androidx.navigation.compose)
+    implementation(libs.firebase.storage.ktx)
     debugImplementation(libs.androidx.ui.tooling)
 
     //FIREBASE
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.realtime)
     implementation(libs.firebase.remote)
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
 
     //TEST
     testImplementation(libs.junit)
@@ -78,4 +85,9 @@ dependencies {
     implementation(libs.dagger.hilt)
     kapt(libs.dagger.hilt.compiler)
 
+    //NEOMORFISMO
+    implementation (libs.neumorphic)
+
+    // LOTTIE
+    implementation(libs.lottie.compose)
 }
