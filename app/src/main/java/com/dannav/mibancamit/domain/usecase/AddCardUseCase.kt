@@ -27,7 +27,7 @@ class AddCardUseCase @Inject constructor(
         if (!CardUtils.numberOk(number))
             return Resource.Failure(
                 IllegalArgumentException(),
-                "Número de tarjeta inválido."
+                "Número de tarjeta inválido. (min 13 max 16 numeros)"
             )
 
         if (!CardUtils.expiryOk(expiry))

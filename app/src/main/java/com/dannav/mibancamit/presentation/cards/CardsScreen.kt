@@ -22,6 +22,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -55,57 +56,59 @@ fun CardsScreen(
     modifier: Modifier = Modifier,
     cardsViewModel: MyCardsViewModel = hiltViewModel()
 ) {
-
     val ui by cardsViewModel.state.collectAsState()
-
-    ui.error?.let { ShowSnackbar(it)  { cardsViewModel.clearMessages() } }
-    ui.success?.let { ShowSnackbar(it) { cardsViewModel.clearMessages() } }
-
-    Box(modifier = modifier
-        .fillMaxSize()
-        .background(BackgroundColor)
-        .padding(top = 20.dp)) {
-
-        when {
-            ui.isLoading && ui.cards.isEmpty() -> {
-                CircularProgressIndicator(Modifier.align(Alignment.Center))
-            }
-            ui.cards.isEmpty() -> {
-                Text(
-                    "No tienes tarjetas",
-                    modifier   = Modifier.align(Alignment.Center),
-                )
-            }
-            else -> {
-                CardsSection(ui.cards)
-            }
-        }
-
-        AddCardFab(
-            modifier = Modifier
-                .align(Alignment.BottomEnd)
-                .padding(16.dp)
-        ) { holder, number, expiry ->
-            cardsViewModel.onAddCard(holder, number, expiry)
-        }
-    }
-
-}
-
-@Composable
-private fun ShowSnackbar(
-    message: String,
-    onDismiss: () -> Unit
-) {
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(message) {
-        snackbarHostState.showSnackbar(message)
-        onDismiss()
+    // Lanza un efecto para mostrar el Snackbar cuando cambien los mensajes de error o éxito.
+    LaunchedEffect(ui.error, ui.success) {
+        ui.error?.let {
+            snackbarHostState.showSnackbar(it)
+            cardsViewModel.clearMessages()
+        }
+        ui.success?.let {
+            snackbarHostState.showSnackbar(it)
+            cardsViewModel.clearMessages()
+        }
     }
 
-    SnackbarHost(hostState = snackbarHostState, Modifier.fillMaxWidth())
+    Scaffold(
+        modifier = modifier,
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
+    ) { paddingValues ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(BackgroundColor)
+                .padding(top = 20.dp)
+                .padding(paddingValues)
+        ) {
+            when {
+                ui.isLoading && ui.cards.isEmpty() -> {
+                    CircularProgressIndicator(Modifier.align(Alignment.Center))
+                }
+                ui.cards.isEmpty() -> {
+                    Text(
+                        "No tienes tarjetas",
+                        modifier = Modifier.align(Alignment.Center),
+                        color = ColorText
+                    )
+                }
+                else -> {
+                    CardsSection(ui.cards)
+                }
+            }
+
+            AddCardFab(
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+            ) { holder, number, expiry ->
+                cardsViewModel.onAddCard(holder, number, expiry)
+            }
+        }
+    }
 }
+
 
 @Composable
 fun AddCardFab(
