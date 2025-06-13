@@ -40,7 +40,7 @@ fun HomeContent(
     onDrawerClick: (CustomDrawerState) -> Unit,
     selectedNavigationItem: NavigationItem,
 ) {
-    val title by remember { mutableStateOf("Mas Reciente") }
+    val title by remember { mutableStateOf("Mis Tarjetas") }
 
     Scaffold(modifier = modifier.clickable(enabled = drawerState == CustomDrawerState.Opened) {
         onDrawerClick(CustomDrawerState.Closed)

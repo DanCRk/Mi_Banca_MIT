@@ -1,5 +1,6 @@
 package com.dannav.mibancamit.data.remote
 
+import android.util.Log
 import com.dannav.mibancamit.data.model.Card
 import com.dannav.mibancamit.utils.ColorUtils.getCardColor
 import com.dannav.mibancamit.utils.CryptoUtils
@@ -20,6 +21,7 @@ class DatabaseRepository @Inject constructor(
 ) {
 
     suspend fun addCard(card: Card) {
+        Log.i("DatabaseRepository", "Adding card: $card")
         val uid = authRepository.currentUser!!.uid
         val cardRef = database.getReference("users/$uid/cards").push()
 
