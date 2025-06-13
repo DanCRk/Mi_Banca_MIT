@@ -34,7 +34,7 @@ import kotlin.math.roundToInt
 
 @Composable
 fun MainScreen(
-    onLogout: (Int) -> Unit,
+    onLogout: () -> Unit,
 ) {
     var drawerState by remember { mutableStateOf(CustomDrawerState.Closed) }
     var selectedNavigationItem by remember { mutableStateOf(NavigationItem.Home) }
@@ -81,6 +81,7 @@ fun MainScreen(
             drawerState = drawerState,
             onDrawerClick = { drawerState = it },
             selectedNavigationItem = selectedNavigationItem,
+            onLogOutClick = onLogout
         )
     }
 }

@@ -39,6 +39,7 @@ fun HomeContent(
     drawerState: CustomDrawerState,
     onDrawerClick: (CustomDrawerState) -> Unit,
     selectedNavigationItem: NavigationItem,
+    onLogOutClick : () -> Unit
 ) {
     val title by remember { mutableStateOf("Mis Tarjetas") }
 
@@ -88,7 +89,7 @@ fun HomeContent(
             NavigationItem.Home -> CardsScreen(Modifier.padding(paddingValues))
             NavigationItem.Pay -> CardsScreen(Modifier.padding(paddingValues))
             NavigationItem.Movements -> CardsScreen(Modifier.padding(paddingValues))
-            NavigationItem.LogOut -> CardsScreen(Modifier.padding(paddingValues))
+            NavigationItem.LogOut -> onLogOutClick()
         }
 
     }
