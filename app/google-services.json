@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1059235857511",
+    "project_id": "mi-banca-mit",
+    "storage_bucket": "mi-banca-mit.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1059235857511:android:a82b25e3741ae5643480c2",
+        "android_client_info": {
+          "package_name": "com.dannav.mibancamit"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCj_xmsDBM2_nZAdQnaG5PDj8RLmlZD6wg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
