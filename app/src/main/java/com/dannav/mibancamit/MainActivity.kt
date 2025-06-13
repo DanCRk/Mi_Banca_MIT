@@ -13,8 +13,6 @@ import com.dannav.mibancamit.presentation.HomeScreen
 import com.dannav.mibancamit.presentation.LoginScreen
 import com.dannav.mibancamit.presentation.MainViewModel
 import com.dannav.mibancamit.presentation.RegisterScreen
-import com.dannav.mibancamit.presentation.components.cards.NeomorphismCard
-import com.dannav.mibancamit.presentation.home.HomeContent
 import com.dannav.mibancamit.presentation.home.MainScreen
 import com.dannav.mibancamit.presentation.login.Login
 import com.dannav.mibancamit.presentation.register.Register

@@ -54,7 +54,7 @@ import com.dannav.mibancamit.ui.theme.ColorText
 @Composable
 fun CardsScreen(
     modifier: Modifier = Modifier,
-    cardsViewModel: MyCardsViewModel = hiltViewModel()
+    cardsViewModel: MyCardsViewModel
 ) {
     val ui by cardsViewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
