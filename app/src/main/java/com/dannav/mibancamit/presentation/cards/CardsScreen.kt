@@ -1,5 +1,6 @@
 package com.dannav.mibancamit.presentation.cards
 
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -9,18 +10,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -36,6 +33,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -49,6 +47,7 @@ import com.dannav.mibancamit.presentation.transactions.TransactionViewModel
 import com.dannav.mibancamit.presentation.transactions.TransactionsScreen
 import com.dannav.mibancamit.ui.theme.BackgroundColor
 import com.dannav.mibancamit.ui.theme.ColorText
+import com.dannav.mibancamit.utils.CardUtils
 
 @Composable
 fun CardsScreen(
@@ -96,7 +95,7 @@ fun CardsScreen(
                 }
 
                 else -> {
-                    Column( Modifier.fillMaxSize()) {
+                    Column(Modifier.fillMaxSize()) {
                         CardsSection(ui.elements)
                         TransactionsScreen(transactionViewModel = transactionViewModel)
                     }
@@ -106,8 +105,10 @@ fun CardsScreen(
             AddCardFab(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(16.dp)
+                    .padding(bottom = 60.dp, end = 20.dp)
+                    .size(65.dp)
             ) { holder, number, expiry ->
+                Log.i("CardsScreen", "AddCardFab: $holder $number $expiry")
                 cardsViewModel.onAddCard(holder, number, expiry)
             }
         }
@@ -122,20 +123,25 @@ fun AddCardFab(
 ) {
     var showDialog by remember { mutableStateOf(false) }
 
-    FloatingActionButton(onClick = { showDialog = true }, modifier = modifier) {
-        Icon(Icons.Default.Add, null)
-    }
+    NeomorphismButton(
+        modifier = modifier,
+        text = "+",
+        fontSize = 35,
+        onClick = { showDialog = true }
+    )
 
     if (showDialog) {
         AddCardDialog(
             onConfirm = { name, number, expiry ->
-                onAdd(name, number, expiry)
+                onAdd(name, number, expiry.chunked(2).joinToString("/"))
                 showDialog = false
             },
             onDismiss = { showDialog = false }
         )
     }
 }
+
+
 
 @Composable
 fun CardsSection(cards: List<Card>) {
@@ -193,6 +199,9 @@ fun CardItem(
     }
 }
 
+
+
+
 @Composable
 fun AddCardDialog(
     onDismiss: () -> Unit,
@@ -225,20 +234,29 @@ fun AddCardDialog(
                 )
                 Spacer(Modifier.height(16.dp))
                 NeoEditText(
+                    value = number,
+                    onvalueChange = { input -> number = input.filter { it.isDigit() }.take(16) },
                     placeholder = "Número",
                     keyboardType = KeyboardType.Number,
                     imeAction = ImeAction.Next,
-                    onvalueChange = { number = it },
-                    value = number
+                    visualTransformation = CardUtils.CardVisualTransformation
                 )
+
                 Spacer(Modifier.height(16.dp))
                 NeoEditText(
                     placeholder = "MM/YY",
-                    keyboardType = KeyboardType.Text,
-                    imeAction = ImeAction.Next,
-                    onvalueChange = { expiry = it },
-                    value = expiry
-                )
+                    keyboardType = KeyboardType.Number,
+                    imeAction = ImeAction.Done,
+                    value = expiry,
+                    onvalueChange = { input ->
+                        expiry = input.filter { it.isDigit() }.take(4)
+                    },
+                    visualTransformation = CardUtils.ExpiryVisualTransformation
+                ){
+                    onConfirm(name, number, expiry)
+                }
+
+
             }
         }
     )

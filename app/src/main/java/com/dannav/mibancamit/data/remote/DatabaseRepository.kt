@@ -5,6 +5,7 @@ import com.dannav.mibancamit.data.model.Card
 import com.dannav.mibancamit.data.model.Transaction
 import com.dannav.mibancamit.utils.ColorUtils.getCardColor
 import com.dannav.mibancamit.utils.CryptoUtils
+import com.dannav.mibancamit.utils.CryptoUtils.sha256Base64
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -21,30 +22,45 @@ class DatabaseRepository @Inject constructor(
     private val database: FirebaseDatabase
 ) {
 
+    class DuplicateCardException : Exception("La tarjeta ya existe")
+
     suspend fun addCard(card: Card) {
-        Log.i("DatabaseRepository", "Adding card: $card")
         val uid = authRepository.currentUser!!.uid
-        val cardRef = database.getReference("users/$uid/cards").push()
-        val cardId = cardRef.key ?: throw IllegalStateException("Card key not generated")
+        val cardsRef = database.getReference("users/$uid/cards")
+
+        val numberHash = sha256Base64(card.cardNumber)
+
+        val dupSnap = cardsRef
+            .orderByChild("cardNumber_hash")
+            .equalTo(numberHash)
+            .get()
+            .await()
+
+        if (dupSnap.exists()) throw DuplicateCardException()
+
+        val cardRef = cardsRef.push()
+        val cardId  = cardRef.key ?: error("Key null")
 
         val encType   = CryptoUtils.encrypt(card.cardType)
         val encNumber = CryptoUtils.encrypt(card.cardNumber)
         val encName   = CryptoUtils.encrypt(card.cardName)
 
         val data = mapOf(
-            "cardId"      to cardId,
-            "cardType"    to encType.cipherText,
-            "cardType_iv" to encType.iv,
-            "cardNumber"  to encNumber.cipherText,
-            "cardNumber_iv" to encNumber.iv,
-            "cardName"    to encName.cipherText,
-            "cardName_iv" to encName.iv,
-            "balance"     to card.balance,
-            "addedAt"     to ServerValue.TIMESTAMP
+            "cardId"          to cardId,
+            "cardType"        to encType.cipherText,
+            "cardType_iv"     to encType.iv,
+            "cardNumber"      to encNumber.cipherText,
+            "cardNumber_iv"   to encNumber.iv,
+            "cardNumber_hash" to numberHash,
+            "cardName"        to encName.cipherText,
+            "cardName_iv"     to encName.iv,
+            "balance"         to card.balance,
+            "addedAt"         to ServerValue.TIMESTAMP
         )
 
         cardRef.setValue(data).await()
     }
+
 
 
     suspend fun pay(

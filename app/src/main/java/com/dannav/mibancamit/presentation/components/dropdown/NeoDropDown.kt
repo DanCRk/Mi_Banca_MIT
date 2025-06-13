@@ -16,14 +16,20 @@ import com.gandiva.neumorphic.shape.Pressed
 import com.gandiva.neumorphic.shape.RoundedCorner
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.graphics.Color
 import com.dannav.mibancamit.ui.theme.ColorPlaceHolder
 import com.dannav.mibancamit.ui.theme.ColorText
+import com.dannav.mibancamit.ui.theme.Primary
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -75,7 +81,11 @@ fun NeumorphicDropdown(
                 unfocusedContainerColor = BackgroundColor,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent,
-                cursorColor = ColorText
+                cursorColor = ColorText,
+                unfocusedLabelColor = ColorText,
+                focusedLabelColor = ColorText,
+                errorLabelColor = Primary,
+                disabledLabelColor = ColorText
             )
         )
         // Menú desplegable: le agregamos la neumorfosis y el fondo
@@ -95,6 +105,7 @@ fun NeumorphicDropdown(
                 .background(containerColor)
         ) {
             cards.forEach { card ->
+                Spacer(Modifier.height(8.dp))
                 DropdownMenuItem(
                     onClick = {
                         onCardSelected(card)
@@ -105,13 +116,13 @@ fun NeumorphicDropdown(
                         darkShadowColor = BackgroundButtonDarkShadow,
                         shadowElevation = 6.dp,
                         lightSource = LightSource.LEFT_TOP,
-                        shape = if (dropdownExpanded) Pressed(RoundedCorner(17.dp))
-                        else Flat(RoundedCorner(17.dp))
+                        shape =  Pressed(RoundedCorner(17.dp))
                     ).menuAnchor(),
                     text = {
                         Text(text = "${card.cardName} - Saldo: ${card.balance}", color = ColorText)
                     }
                 )
+                Spacer(Modifier.height(8.dp))
             }
         }
     }

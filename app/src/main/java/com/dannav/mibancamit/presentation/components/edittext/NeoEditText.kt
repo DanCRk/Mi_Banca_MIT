@@ -48,6 +48,7 @@ fun NeoEditText(
     isPassword: Boolean = false,
     imeAction: ImeAction,
     onvalueChange: (String) -> Unit,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
     onSendAction: () -> Unit = {}
 ) {
 
@@ -68,7 +69,11 @@ fun NeoEditText(
                 Icon(imageVector = icon, contentDescription = "", tint = ColorText)
             }
         },
-        visualTransformation = if (passwordVisible || !isPassword) VisualTransformation.None else PasswordVisualTransformation(),
+        visualTransformation = if (visualTransformation == VisualTransformation.None && isPassword) {
+            if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation()
+        } else {
+            visualTransformation
+        },
         trailingIcon = {
             if (isPassword) {
                 val image = if (passwordVisible) R.drawable.ic_visible else R.drawable.ic_no_visible

@@ -25,7 +25,7 @@ class TransactionViewModel @Inject constructor(
 
     init {
         getTransactionsUseCase()
-            .onEach { list -> _state.update { it.copy(elements = list) } }
+            .onEach { list -> _state.update { it.copy(elements = list.reversed()) } }
             .catch   {  _state.update { it.copy(error = "Error cargando tarjetas") } }
             .launchIn(viewModelScope)
     }

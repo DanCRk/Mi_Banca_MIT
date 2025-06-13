@@ -3,6 +3,7 @@ package com.dannav.mibancamit.presentation.payments
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -26,6 +27,7 @@ import com.dannav.mibancamit.ui.theme.BackgroundColor
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.LaunchedEffect
+import com.dannav.mibancamit.utils.CardUtils
 
 @Composable
 fun PaymentScreen(
@@ -94,23 +96,14 @@ fun PaymentScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
 
-                if (cardsUi.elements.isNotEmpty()) {
-                    NeumorphicDropdown(
-                        cards = cardsUi.elements,
-                        selectedCard = selectedCard,
-                        dropdownExpanded = dropdownExpanded,
-                        onExpandedChange = { dropdownExpanded = it },
-                        onCardSelected = { selectedCard = it }
-                    )
-                }
-
                 NeoEditText(
                     value = destinationCardNumber,
-                    onvalueChange = { destinationCardNumber = it },
+                    onvalueChange = { input -> destinationCardNumber = input.filter { it.isDigit() }.take(16) },
                     placeholder = "Número de tarjeta destino",
-                    modifier = Modifier.fillMaxWidth(),
                     keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Next
+                    modifier = Modifier.fillMaxWidth(),
+                    imeAction = ImeAction.Next,
+                    visualTransformation = CardUtils.CardVisualTransformation
                 )
 
                 NeoEditText(
@@ -122,6 +115,18 @@ fun PaymentScreen(
                     imeAction = ImeAction.Next
                 )
 
+                if (cardsUi.elements.isNotEmpty()) {
+                    NeumorphicDropdown(
+                        cards = cardsUi.elements,
+                        selectedCard = selectedCard,
+                        dropdownExpanded = dropdownExpanded,
+                        onExpandedChange = { dropdownExpanded = it },
+                        onCardSelected = { selectedCard = it }
+                    )
+                }
+
+                Spacer(Modifier.weight(1f))
+
                 NeomorphismButton(
                     onClick = {
                         paymentsViewModel.onMakePayment(
@@ -131,7 +136,7 @@ fun PaymentScreen(
                             selectedCard!!.cardNumber
                         )
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 70.dp),
                     enabled = canPay && !paymentUi.isLoading,
                     text = "Pagar"
                 )

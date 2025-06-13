@@ -11,6 +11,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dannav.mibancamit.ui.theme.BackgroundButtonDarkShadow
@@ -29,7 +30,9 @@ fun NeomorphismButton(
     enabled: Boolean = true,
     text: String,
     textStyle: TextStyle = TextStyle(),
-    onClick: () -> Unit
+    fontSize: Int  = 16,
+    onClick: () -> Unit,
+
 ) {
 
 
@@ -58,6 +61,6 @@ fun NeomorphismButton(
         ),
 
         ) {
-        Text(text = text, color = ColorText, fontSize = 16.sp, style = textStyle)
+        Text(text = text, color = ColorText, fontSize = fontSize.sp, style = textStyle)
     }
 }
