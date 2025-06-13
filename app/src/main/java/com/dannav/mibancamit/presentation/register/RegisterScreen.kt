@@ -62,7 +62,6 @@ fun Register(
     val registerEnable by registerViewModel.registerEnable.collectAsStateWithLifecycle()
 
     val state by registerViewModel.uiState.collectAsStateWithLifecycle()
-    val registerSuccessMessage by registerViewModel.registerSuccessMessage.collectAsStateWithLifecycle()
 
     if (state is Resource.Loading) {
         FullScreenProgressBar(text = "Registrando Usuario")
@@ -231,7 +230,6 @@ fun Register(
                         message =( state as Resource.Failure).message,
                         duration = SnackbarDuration.Short
                     )
-                    registerViewModel.clearMessage()
                 }
 
             }

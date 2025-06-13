@@ -44,9 +44,6 @@ class RegisterViewModel @Inject constructor(
     private val _registerEnable = MutableStateFlow<Boolean>(false)
     val registerEnable: StateFlow<Boolean> = _registerEnable
 
-    private val _registerSuccessMessage = MutableStateFlow<String>("")
-    val registerSuccessMessage: StateFlow<String> = _registerSuccessMessage
-
 
     fun onRegisterChange(user: String, email: String, password: String, repeatPassword: String) {
         _email.value = email
@@ -71,7 +68,4 @@ class RegisterViewModel @Inject constructor(
 
     }
 
-    fun clearMessage() {
-        _registerSuccessMessage.value = ""
-    }
 }

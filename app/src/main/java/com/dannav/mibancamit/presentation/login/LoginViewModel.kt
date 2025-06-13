@@ -36,15 +36,6 @@ class LoginViewModel @Inject constructor(
     private val _loginEnable = MutableStateFlow<Boolean>(false)
     val loginEnable: StateFlow<Boolean> = _loginEnable
 
-    private val _isLogin = MutableStateFlow<Boolean>(false)
-    val isLogin: StateFlow<Boolean> = _isLogin
-
-    private val _loginSuccess = MutableStateFlow<Boolean>(false)
-    val loginSuccess: StateFlow<Boolean> = _loginSuccess
-
-    private val _loginSuccessMessage = MutableStateFlow<String>("")
-    val loginSuccessMessage: StateFlow<String> = _loginSuccessMessage
-
 
     fun onLoginChange(email: String, password: String) {
         _email.value = email
@@ -57,17 +48,11 @@ class LoginViewModel @Inject constructor(
     fun onLoginClick() = viewModelScope.launch {
 
         viewModelScope.launch {
-            _isLogin.value = true
             _uiState.value = Resource.Loading
             delay(1000)
             _uiState.value = login(_email.value, _password.value)
-            _loginSuccess.value
-            _isLogin.value = false
         }
 
     }
 
-    fun clearMessage() {
-        _loginSuccessMessage.value = ""
-    }
 }

@@ -39,6 +39,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
 import com.dannav.mibancamit.R
+import com.dannav.mibancamit.data.Resource
 import com.dannav.mibancamit.presentation.components.buttons.NeomorphismButton
 import com.dannav.mibancamit.presentation.components.cards.NeomorphismCard
 import com.dannav.mibancamit.presentation.components.edittext.NeoEditText
@@ -48,7 +49,6 @@ import com.dannav.mibancamit.ui.theme.ColorText
 
 @Composable
 fun Login(
-    modifier: Modifier = Modifier,
     loginViewModel: LoginViewModel = hiltViewModel(),
     onRegisterClick: () -> Unit,
     onLoginSuccess: () -> Unit
@@ -58,15 +58,13 @@ fun Login(
 
     val loginEnable by loginViewModel.loginEnable.collectAsStateWithLifecycle()
 
-    val isLogin by loginViewModel.isLogin.collectAsStateWithLifecycle()
-    val loginSuccess by loginViewModel.loginSuccess.collectAsStateWithLifecycle()
-    val loginSuccessMessage by loginViewModel.loginSuccessMessage.collectAsStateWithLifecycle()
+    val state by loginViewModel.uiState.collectAsStateWithLifecycle()
 
-    if (isLogin) {
+    if (state is Resource.Loading) {
         FullScreenProgressBar(text = "Iniciando Sesion")
     }
 
-    if (loginSuccess) {
+    if (state is Resource.Success) {
         onLoginSuccess()
     }
 
@@ -179,14 +177,14 @@ fun Login(
                 loginViewModel.onLoginClick()
             }
 
-            LaunchedEffect(loginSuccessMessage) {
-                if (loginSuccessMessage.isNotEmpty()) {
+            if(state is Resource.Failure ) {
+                LaunchedEffect(key1 = 0) {
                     snackbarHostState.showSnackbar(
-                        message = loginSuccessMessage,
+                        message =( state as Resource.Failure).message,
                         duration = SnackbarDuration.Short
                     )
-                    loginViewModel.clearMessage()
                 }
+
             }
 
         }

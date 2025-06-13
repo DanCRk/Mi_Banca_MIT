@@ -41,9 +41,10 @@ fun MainContent() {
                 navController.navigate(RegisterScreen)
             }) {
                 navController.navigate(HomeScreen) {
-                    popUpTo(navController.graph.startDestinationId) {
+                    popUpTo(LoginScreen) {
                         inclusive = true
                     }
+                    launchSingleTop = true
                 }
             }
         }
