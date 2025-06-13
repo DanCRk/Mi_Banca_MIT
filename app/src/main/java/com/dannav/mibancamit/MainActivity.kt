@@ -12,6 +12,8 @@ import com.dannav.mibancamit.presentation.HomeScreen
 import com.dannav.mibancamit.presentation.LoginScreen
 import com.dannav.mibancamit.presentation.RegisterScreen
 import com.dannav.mibancamit.presentation.components.cards.NeomorphismCard
+import com.dannav.mibancamit.presentation.home.HomeContent
+import com.dannav.mibancamit.presentation.home.MainScreen
 import com.dannav.mibancamit.presentation.login.Login
 import com.dannav.mibancamit.presentation.register.Register
 import com.dannav.mibancamit.ui.theme.MiBancaMITTheme
@@ -33,7 +35,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainContent() {
     val navController = rememberNavController()
-    val startDestination = LoginScreen
+    val startDestination = HomeScreen
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable<LoginScreen> {
@@ -63,7 +65,7 @@ fun MainContent() {
         }
 
         composable<HomeScreen> {
-            NeomorphismCard {
+            MainScreen {
 
             }
         }

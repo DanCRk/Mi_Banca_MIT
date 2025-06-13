@@ -43,9 +43,9 @@ fun NeoEditText(
     modifier: Modifier = Modifier, placeholder: String, keyboardType: KeyboardType,
     singleLine: Boolean = false,
     maxLines: Int = 1,
-    value: String = "",
-    icon: ImageVector,
-    isPassword:Boolean = false,
+    value: String,
+    icon: ImageVector? = null,
+    isPassword: Boolean = false,
     imeAction: ImeAction,
     onvalueChange: (String) -> Unit,
     onSendAction: () -> Unit = {}
@@ -64,11 +64,13 @@ fun NeoEditText(
     TextField(
         value = value,
         leadingIcon = {
-            Icon(imageVector = icon, contentDescription = "", tint = ColorText)
+            icon?.let {
+                Icon(imageVector = icon, contentDescription = "", tint = ColorText)
+            }
         },
         visualTransformation = if (passwordVisible || !isPassword) VisualTransformation.None else PasswordVisualTransformation(),
         trailingIcon = {
-            if (isPassword){
+            if (isPassword) {
                 val image = if (passwordVisible) R.drawable.ic_visible else R.drawable.ic_no_visible
                 val description = if (passwordVisible) "Hide password" else "Show password"
                 IconButton(onClick =

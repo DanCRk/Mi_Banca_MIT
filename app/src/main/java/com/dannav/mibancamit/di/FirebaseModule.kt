@@ -3,6 +3,7 @@ package com.dannav.mibancamit.di
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.database
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.StorageReference
@@ -22,7 +23,7 @@ object FirebaseModule{
 
     @Singleton
     @Provides
-    fun provideDatabase(): DatabaseReference = Firebase.database.reference
+    fun provideDatabase(): FirebaseDatabase = Firebase.database
 
     @Singleton
     @Provides
