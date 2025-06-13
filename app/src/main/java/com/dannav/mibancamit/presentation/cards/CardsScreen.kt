@@ -21,12 +21,10 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -43,18 +41,20 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.dannav.mibancamit.R
 import com.dannav.mibancamit.data.model.Card
 import com.dannav.mibancamit.presentation.components.buttons.NeomorphismButton
 import com.dannav.mibancamit.presentation.components.edittext.NeoEditText
+import com.dannav.mibancamit.presentation.transactions.TransactionViewModel
+import com.dannav.mibancamit.presentation.transactions.TransactionsScreen
 import com.dannav.mibancamit.ui.theme.BackgroundColor
 import com.dannav.mibancamit.ui.theme.ColorText
 
 @Composable
 fun CardsScreen(
     modifier: Modifier = Modifier,
-    cardsViewModel: MyCardsViewModel
+    cardsViewModel: MyCardsViewModel,
+    transactionViewModel: TransactionViewModel
 ) {
     val ui by cardsViewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -83,18 +83,23 @@ fun CardsScreen(
                 .padding(paddingValues)
         ) {
             when {
-                ui.isLoading && ui.cards.isEmpty() -> {
+                ui.isLoading && ui.elements.isEmpty() -> {
                     CircularProgressIndicator(Modifier.align(Alignment.Center))
                 }
-                ui.cards.isEmpty() -> {
+
+                ui.elements.isEmpty() -> {
                     Text(
                         "No tienes tarjetas",
                         modifier = Modifier.align(Alignment.Center),
                         color = ColorText
                     )
                 }
+
                 else -> {
-                    CardsSection(ui.cards)
+                    Column( Modifier.fillMaxSize()) {
+                        CardsSection(ui.elements)
+                        TransactionsScreen(transactionViewModel = transactionViewModel)
+                    }
                 }
             }
 
@@ -148,7 +153,7 @@ fun CardItem(
 ) {
     val logo = when (card.cardType.uppercase()) {
         "MASTERCARD" -> painterResource(R.drawable.ic_mastercard)
-        else          -> painterResource(R.drawable.ic_visa)
+        else -> painterResource(R.drawable.ic_visa)
     }
 
     val formattedBalance = remember(card.balance) {
@@ -193,7 +198,7 @@ fun AddCardDialog(
     onDismiss: () -> Unit,
     onConfirm: (String, String, String) -> Unit,
 ) {
-    var name   by remember { mutableStateOf("") }
+    var name by remember { mutableStateOf("") }
     var number by remember { mutableStateOf("") }
     var expiry by remember { mutableStateOf("") }
 

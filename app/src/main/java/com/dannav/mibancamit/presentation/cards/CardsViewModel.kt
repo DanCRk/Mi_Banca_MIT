@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dannav.mibancamit.data.Resource
 import com.dannav.mibancamit.data.model.Card
+import com.dannav.mibancamit.domain.UiState
 import com.dannav.mibancamit.domain.usecase.AddCardUseCase
 import com.dannav.mibancamit.domain.usecase.ObserveCardsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,19 +23,12 @@ class MyCardsViewModel @Inject constructor(
     private val addCard: AddCardUseCase
 ) : ViewModel() {
 
-    data class UiState(
-        val cards: List<Card> = emptyList(),
-        val isLoading: Boolean = false,
-        val error: String? = null,
-        val success: String? = null
-    )
-
-    private val _state = MutableStateFlow(UiState())
-    val state: StateFlow<UiState> = _state
+    private val _state = MutableStateFlow(UiState<Card>())
+    val state: StateFlow<UiState<Card>> = _state
 
     init {
         observeCards()
-            .onEach { list -> _state.update { it.copy(cards = list) } }
+            .onEach { list -> _state.update { it.copy(elements = list) } }
             .catch   {  _state.update { it.copy(error = "Error cargando tarjetas") } }
             .launchIn(viewModelScope)
     }

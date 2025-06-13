@@ -12,19 +12,21 @@ class PaymentUseCase @Inject constructor(
     suspend operator fun invoke(
         destinationCardNumber: String,
         fromCardId: String,
+        fromCardName: String,
         amount: Double
     ): Resource<Unit> {
-        Log.i("PaymentUseCase", "Realizando pago de $amount desde $fromCardId a $destinationCardNumber")
+        Log.i("PaymentUseCase", "Realizando pago de $amount desde $fromCardId ($fromCardName) a $destinationCardNumber")
+
         val recipient = databaseRepository.findRecipientByCardNumber(destinationCardNumber)
-            ?: return Resource.Failure(Exception(),"Destino no encontrado")
+            ?: return Resource.Failure(Exception(), "Destino no encontrado")
+
         val (receiverUid, toCardId) = recipient
 
         return try {
-            databaseRepository.pay(receiverUid, fromCardId, toCardId, amount)
+            databaseRepository.pay(receiverUid, fromCardId, toCardId, amount, fromCardName)
             Resource.Success(Unit, "Pago realizado exitosamente")
         } catch(e: Exception) {
-            Resource.Failure(Exception(),"Error al realizar el pago: ${e.message}")
+            Resource.Failure(Exception(), "Error al realizar el pago: ${e.message}")
         }
     }
-
 }

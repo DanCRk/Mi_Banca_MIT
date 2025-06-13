@@ -62,8 +62,8 @@ fun PaymentScreen(
         }
     }
 
-    LaunchedEffect(cardsUi.cards.isEmpty()) {
-        if (cardsUi.cards.isEmpty()) {
+    LaunchedEffect(cardsUi.elements.isEmpty()) {
+        if (cardsUi.elements.isEmpty()) {
             snackbarHostState.showSnackbar("No tienes tarjetas configuradas")
         }
     }
@@ -94,9 +94,9 @@ fun PaymentScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
 
-                if (cardsUi.cards.isNotEmpty()) {
+                if (cardsUi.elements.isNotEmpty()) {
                     NeumorphicDropdown(
-                        cards = cardsUi.cards,
+                        cards = cardsUi.elements,
                         selectedCard = selectedCard,
                         dropdownExpanded = dropdownExpanded,
                         onExpandedChange = { dropdownExpanded = it },
@@ -127,7 +127,8 @@ fun PaymentScreen(
                         paymentsViewModel.onMakePayment(
                             destinationCardNumber,
                             selectedCard!!.cardId,
-                            amount
+                            amount,
+                            selectedCard!!.cardNumber
                         )
                     },
                     modifier = Modifier.fillMaxWidth(),
