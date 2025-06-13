@@ -3,7 +3,9 @@ package com.dannav.mibancamit.presentation.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -30,8 +32,10 @@ import com.dannav.mibancamit.presentation.cards.MyCardsViewModel
 import com.dannav.mibancamit.presentation.navigationdrawer.model.NavigationItem
 import com.dannav.mibancamit.presentation.payments.PaymentScreen
 import com.dannav.mibancamit.presentation.payments.PaymentViewModel
+import com.dannav.mibancamit.presentation.transactions.TransactionViewModel
 import com.dannav.mibancamit.ui.theme.BackgroundColor
 import com.dannav.mibancamit.ui.theme.ColorText
+import com.dannav.mibancamit.presentation.transactions.TransactionsScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,7 +46,9 @@ fun HomeContent(
     selectedNavigationItem: NavigationItem,
     onLogOutClick : () -> Unit,
     cardsViewModel: MyCardsViewModel = hiltViewModel(),
-    paymentsViewModel: PaymentViewModel = hiltViewModel()
+    paymentsViewModel: PaymentViewModel = hiltViewModel(),
+    transactionViewModel: TransactionViewModel = hiltViewModel()
+
 ) {
     val title by remember { mutableStateOf("Mis Tarjetas") }
 
@@ -89,7 +95,7 @@ fun HomeContent(
 
 
         when (selectedNavigationItem){
-            NavigationItem.Home -> CardsScreen(Modifier.padding(paddingValues), cardsViewModel)
+            NavigationItem.Home -> CardsScreen(Modifier.padding(paddingValues), cardsViewModel, transactionViewModel)
             NavigationItem.Pay -> PaymentScreen (Modifier.padding(paddingValues), paymentsViewModel, cardsViewModel)
             NavigationItem.LogOut -> onLogOutClick()
         }

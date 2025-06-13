@@ -2,6 +2,7 @@ package com.dannav.mibancamit.data.remote
 
 import android.util.Log
 import com.dannav.mibancamit.data.model.Card
+import com.dannav.mibancamit.data.model.Transaction
 import com.dannav.mibancamit.utils.ColorUtils.getCardColor
 import com.dannav.mibancamit.utils.CryptoUtils
 import com.google.firebase.database.DataSnapshot
@@ -23,17 +24,15 @@ class DatabaseRepository @Inject constructor(
     suspend fun addCard(card: Card) {
         Log.i("DatabaseRepository", "Adding card: $card")
         val uid = authRepository.currentUser!!.uid
-        // Se genera la referencia con push() para obtener el identificador único (cardId)
         val cardRef = database.getReference("users/$uid/cards").push()
         val cardId = cardRef.key ?: throw IllegalStateException("Card key not generated")
 
-        // 🔐 Ciframos los campos sensibles
         val encType   = CryptoUtils.encrypt(card.cardType)
         val encNumber = CryptoUtils.encrypt(card.cardNumber)
         val encName   = CryptoUtils.encrypt(card.cardName)
 
         val data = mapOf(
-            "cardId"      to cardId, // Campo en claro para identificar la tarjeta
+            "cardId"      to cardId,
             "cardType"    to encType.cipherText,
             "cardType_iv" to encType.iv,
             "cardNumber"  to encNumber.cipherText,
@@ -48,19 +47,23 @@ class DatabaseRepository @Inject constructor(
     }
 
 
-    suspend fun pay(toUid: String, fromCardId: String, toCardId: String, amount: Double) {
+    suspend fun pay(
+        toUid: String,
+        fromCardId: String,
+        toCardId: String,
+        amount: Double,
+        fromCardName: String
+    ) {
         val senderUid = authRepository.currentUser!!.uid
         val root = database.reference
 
         val updates = mapOf(
-            // Se debita el balance en la tarjeta del remitente
             "/users/$senderUid/cards/$fromCardId/balance" to ServerValue.increment(-amount),
-            // Se acredita el balance en la tarjeta del destinatario
             "/users/$toUid/cards/$toCardId/balance" to ServerValue.increment(+amount)
         )
         root.updateChildren(updates).await()
 
-        recordTransaction(senderUid, toUid, fromCardId, toCardId, amount)
+        recordTransaction(senderUid, toUid, fromCardId, toCardId, amount, fromCardName)
     }
 
 
@@ -93,7 +96,6 @@ class DatabaseRepository @Inject constructor(
                         val name     = CryptoUtils.decrypt(nameEnc)
                         val balance  = (snap.child("balance").value as? Number)?.toDouble() ?: 0.0
 
-                        // Aquí, para el color podrías usar la función getCardColor según el tipo
                         Card(
                             cardId = cardId,
                             cardType = type,
@@ -124,25 +126,33 @@ class DatabaseRepository @Inject constructor(
         receiverUid: String,
         fromCardId: String,
         toCardId: String,
-        amount: Double
+        amount: Double,
+        fromCardName: String,
     ) {
+        Log.i("DatabaseRepository", "Recording transaction: $senderUid -> $receiverUid, amount: $amount")
         val transactionData = mapOf(
-            "fromCardId"  to fromCardId,       // Tarjeta del remitente
-            "toCardId"    to toCardId,         // Tarjeta del destinatario
-            "fromUid"     to senderUid,
-            "toUid"       to receiverUid,
-            "amount"      to amount,
-            "timestamp"   to ServerValue.TIMESTAMP
+            "fromUid"       to senderUid,
+            "toUid"         to receiverUid,
+            "fromCardId"    to fromCardId,
+            "toCardId"      to toCardId,
+            "fromCardName"  to fromCardName,
+            "amount"        to amount,
+            "timestamp"     to ServerValue.TIMESTAMP,
         )
 
-        // Registra el movimiento en el nodo del remitente
-        val senderRef = database.getReference("users/$senderUid/transactions").push()
-        senderRef.setValue(transactionData).await()
+        if (senderUid == receiverUid) {
+            val ref = database.getReference("users/$senderUid/transactions").push()
+            ref.setValue(transactionData).await()
+        } else {
+            val senderRef = database.getReference("users/$senderUid/transactions").push()
+            senderRef.setValue(transactionData).await()
 
-        // Registra el movimiento en el nodo del destinatario
-        val receiverRef = database.getReference("users/$receiverUid/transactions").push()
-        receiverRef.setValue(transactionData).await()
+            val receiverRef = database.getReference("users/$receiverUid/transactions").push()
+            receiverRef.setValue(transactionData).await()
+        }
     }
+
+
 
 
     suspend fun findRecipientByCardNumber(cardNumberPlain: String): Pair<String, String>? {
@@ -157,7 +167,6 @@ class DatabaseRepository @Inject constructor(
                         cipherText = cardSnap.child("cardNumber").value as String,
                         iv = cardSnap.child("cardNumber_iv").value as String
                     )
-                    // Se desencripta y se compara
                     if (CryptoUtils.decrypt(encNumber) == cardNumberPlain) {
                         val cardId = cardSnap.key ?: ""
                         return Pair(userUid, cardId)
@@ -168,6 +177,54 @@ class DatabaseRepository @Inject constructor(
         }
         return null
     }
+
+    fun observeTransactions(): Flow<List<Transaction>> = callbackFlow {
+        val currentUid = authRepository.currentUser!!.uid
+        val ref = database.getReference("users/$currentUid/transactions")
+
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val transactions = snapshot.children.mapNotNull { snap ->
+                    try {
+                        val fromUid = snap.child("fromUid").value as? String ?: ""
+                        val toUid = snap.child("toUid").value as? String ?: ""
+                        val fromCardId = snap.child("fromCardId").value as? String ?: ""
+                        val toCardId = snap.child("toCardId").value as? String ?: ""
+                        val fromCardName = snap.child("fromCardName").value as? String ?: ""
+                        val amount = (snap.child("amount").value as? Number)?.toDouble() ?: 0.0
+                        val timestamp = when (val timestampAny = snap.child("timestamp").value) {
+                            is Long -> timestampAny
+                            is Double -> timestampAny.toLong()
+                            else -> 0L
+                        }
+                        val type = if (toUid == currentUid) "deposit" else "pay"
+
+                        Transaction(
+                            fromUid = fromUid,
+                            toUid = toUid,
+                            fromCardId = fromCardId,
+                            toCardId = toCardId,
+                            fromCardName = fromCardName,
+                            amount = amount,
+                            timestamp = timestamp,
+                            type = type
+                        )
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                trySend(transactions).isSuccess
+            }
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
+        ref.addValueEventListener(listener)
+        awaitClose { ref.removeEventListener(listener) }
+    }
+
+
+
 
 
 }

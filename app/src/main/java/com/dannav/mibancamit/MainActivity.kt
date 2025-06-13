@@ -1,11 +1,14 @@
 package com.dannav.mibancamit
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -34,10 +37,13 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainContent(
-    mainViewModel : MainViewModel = hiltViewModel()
+    mainViewModel: MainViewModel = hiltViewModel()
 ) {
     val navController = rememberNavController()
-    val startDestination = HomeScreen
+    val currentUser by mainViewModel.uiState.collectAsStateWithLifecycle()
+
+    val startDestination = if (currentUser == true) HomeScreen else LoginScreen
+
 
     NavHost(navController = navController, startDestination = startDestination) {
         composable<LoginScreen> {

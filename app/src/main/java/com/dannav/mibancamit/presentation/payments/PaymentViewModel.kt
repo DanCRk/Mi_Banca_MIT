@@ -25,9 +25,9 @@ class PaymentViewModel @Inject constructor(
     private val _state = MutableStateFlow(UiState())
     val state: StateFlow<UiState> = _state
 
-    fun onMakePayment(destinationCardNumber: String, fromCardId: String, amount: Double) = viewModelScope.launch {
+    fun onMakePayment(destinationCardNumber: String, fromCardId: String, amount: Double, fromCardNumber:String) = viewModelScope.launch {
         _state.update { it.copy(isLoading = true, error = null, success = null) }
-        when(val res = paymentUseCase(destinationCardNumber, fromCardId, amount)) {
+        when(val res = paymentUseCase(destinationCardNumber, fromCardId, fromCardNumber, amount)) {
             is Resource.Success -> _state.update { it.copy(isLoading = false, success = res.message) }
             is Resource.Failure -> _state.update { it.copy(isLoading = false, error = res.message) }
             is Resource.Loading -> _state.update { it.copy(isLoading = true) }
