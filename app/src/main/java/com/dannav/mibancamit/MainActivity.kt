@@ -13,6 +13,7 @@ import com.dannav.mibancamit.presentation.LoginScreen
 import com.dannav.mibancamit.presentation.RegisterScreen
 import com.dannav.mibancamit.presentation.components.cards.NeomorphismCard
 import com.dannav.mibancamit.presentation.login.Login
+import com.dannav.mibancamit.presentation.register.Register
 import com.dannav.mibancamit.ui.theme.MiBancaMITTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -34,12 +35,12 @@ fun MainContent() {
     val navController = rememberNavController()
     val startDestination = LoginScreen
 
-    NavHost( navController = navController, startDestination = startDestination){
+    NavHost(navController = navController, startDestination = startDestination) {
         composable<LoginScreen> {
-            Login (onRegisterClick = {
+            Login(onRegisterClick = {
                 navController.navigate(RegisterScreen)
-            }){
-                navController.navigate(HomeScreen){
+            }) {
+                navController.navigate(HomeScreen) {
                     popUpTo(navController.graph.startDestinationId) {
                         inclusive = true
                     }
@@ -48,16 +49,18 @@ fun MainContent() {
         }
 
         composable<RegisterScreen> {
-            Login (onRegisterClick = {
+            Register(onLoginClick = {
                 navController.popBackStack()
-            }){
-                navController.navigate(HomeScreen){
-                    popUpTo(navController.graph.startDestinationId) {
+            }) {
+                navController.navigate(HomeScreen) {
+                    popUpTo(LoginScreen) {
                         inclusive = true
                     }
+                    launchSingleTop = true
                 }
             }
         }
+
         composable<HomeScreen> {
             NeomorphismCard {
 

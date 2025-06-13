@@ -25,6 +25,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            isMinifyEnabled = false
+            isDebuggable = true
+            buildConfigField("String", "CRYPTO_KEY", "\"cbvT6p8ocCggNR2l8lHjTfEO9aZt2S8BVlRH2umGIKE=\"")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -45,6 +50,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
